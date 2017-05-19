@@ -8,6 +8,7 @@ public interface BoardCallBacks {
 
     boolean isMovePossible(PlayerTurn playerTurn, CellCoordinates cellLocation);
 
-    void moveOn(PlayerTurn playerTurn, CellCoordinates cellLocation);
+    PlayerTurn moveOn(PlayerTurn playerTurn, CellCoordinates cellLocation);
 
+    Board getBoard();
 }

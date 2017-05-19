@@ -16,6 +16,8 @@ public class Board {
     }
 
     private void setStartingPosition() {
+        board[5][2] = 0;
+        board[2][3] = 0;
         board[3][3] = 0;
         board[3][4] = 1;
         board[4][3] = 1;

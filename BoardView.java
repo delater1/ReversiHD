@@ -17,6 +17,7 @@ public class BoardView implements UiCallBacks {
     int N = 8;
     ReversiGridPane[][] gameBoard;
     BoardCallBacks boardCallBacks;
+    PlayerTurn currentPlayerTurn = PlayerTurn.BLACK;
 
 
     public BoardView(int nodeSize, BoardCallBacks boardCallBacks) {
@@ -36,10 +37,7 @@ public class BoardView implements UiCallBacks {
     }
 
     public void setStartingPosition() {
-        setCircle(gameBoard[3][3], Color.WHITE);
-        setCircle(gameBoard[3][4], Color.BLACK);
-        setCircle(gameBoard[4][3], Color.BLACK);
-        setCircle(gameBoard[4][4], Color.WHITE);
+        boardUpdate(boardCallBacks.getBoard());
     }
 
     private void createRowPanes(GridPane grid) {
@@ -70,18 +68,18 @@ public class BoardView implements UiCallBacks {
         }
     }
 
-    public static void mouseClick(ReversiGridPane reversiGridPane, BoardCallBacks boardCallBacks) {
-        if (boardCallBacks.isPlayerTurn() && boardCallBacks.isMovePossible(PlayerTurn.BLACK, reversiGridPane.getCellCoordinates())) {
-            boardCallBacks.moveOn(PlayerTurn.BLACK, reversiGridPane.getCellCoordinates());
+    public void mouseClick(ReversiGridPane reversiGridPane, BoardCallBacks boardCallBacks) {
+        if (boardCallBacks.isPlayerTurn() && boardCallBacks.isMovePossible(currentPlayerTurn , reversiGridPane.getCellCoordinates())) {
+            currentPlayerTurn = boardCallBacks.moveOn(currentPlayerTurn, reversiGridPane.getCellCoordinates());
         }
     }
 
-    private static void setCircle(ReversiGridPane reversiGridPane, Color color) {
+    private void setCircle(ReversiGridPane reversiGridPane, Color color) {
         Group group = createCircle(reversiGridPane, color);
         reversiGridPane.getChildren().addAll(group);
     }
 
-    private static Group createCircle(ReversiGridPane reversiGridPane, Color color) {
+    private Group createCircle(ReversiGridPane reversiGridPane, Color color) {
         Circle circle = new Circle(reversiGridPane.getHeight() / 2, reversiGridPane.getWidth() / 2, reversiGridPane.getHeight() / 3);
         circle.setFill(color);
         Group group = new Group();
@@ -89,16 +87,15 @@ public class BoardView implements UiCallBacks {
         return group;
     }
 
-    public static void mouseOver(ReversiGridPane reversiGridPane, BoardCallBacks boardCallBacks) {
-        if (boardCallBacks.isPlayerTurn() && boardCallBacks.isMovePossible(PlayerTurn.BLACK, reversiGridPane.getCellCoordinates())) {
+    public void mouseOver(ReversiGridPane reversiGridPane, BoardCallBacks boardCallBacks) {
+        if (boardCallBacks.isPlayerTurn() && boardCallBacks.isMovePossible(currentPlayerTurn, reversiGridPane.getCellCoordinates())) {
             reversiGridPane.setStyle("-fx-background-color: black, #6aba3e; -fx-background-insets: 0, 0 1 1 0;");
         }
     }
 
-    public static void mouseExit(ReversiGridPane reversiGridPane) {
+    public void mouseExit(ReversiGridPane reversiGridPane) {
         reversiGridPane.setStyle("-fx-background-color: black, #4d8f3d; -fx-background-insets: 0, 0 1 1 0;");
     }
-
 
     @Override
     public void boardUpdate(Board board) {

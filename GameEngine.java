@@ -22,8 +22,14 @@ public class GameEngine implements BoardCallBacks {
 
     @Override
     public boolean isMovePossible(PlayerTurn playerTurn, CellCoordinates cellLocation) {
-        return isFieldEmpty(cellLocation)  && isDiagonalMovePossible(FieldState.BLACK, cellLocation);
+        FieldState moveColour = getPlayerColour(playerTurn);
+        return isFieldEmpty(cellLocation) && (isHorizontalMovePossible(moveColour, cellLocation) || isVerticalMovePossible(moveColour, cellLocation) || isDiagonalMovePossible(moveColour, cellLocation));
+    }
 
+    private FieldState getPlayerColour(PlayerTurn playerTurn) {
+        if (playerTurn.equals(PlayerTurn.BLACK))
+            return FieldState.BLACK;
+        return FieldState.WHITE;
     }
 
     private boolean isFieldEmpty(CellCoordinates cellCoordinates) {
@@ -121,15 +127,18 @@ public class GameEngine implements BoardCallBacks {
     }
 
     private boolean isDiagonalMovePossible(FieldState fieldState, CellCoordinates cellLocation) {
-        return checkTopLeftToTopBottom(fieldState, cellLocation);
+        return checkTopLeftToRightBottom(fieldState, cellLocation) ||
+                checkRightBottomToTopLeft(fieldState, cellLocation) ||
+                checkTopRightToBottomLeft(fieldState, cellLocation) ||
+                checkBottomLeftToTopRight(fieldState, cellLocation);
     }
 
-    private boolean checkTopLeftToTopBottom(FieldState cellState, CellCoordinates cellLocation) {
+    private boolean checkTopLeftToRightBottom(FieldState cellState, CellCoordinates cellLocation) {
         boolean isCorrectCellStateFound = false;
         boolean areAllPiecesBeetwenOposites = false;
         CellCoordinates borderCoordinates = topLeftBorderCoordinates(cellLocation);
         for (int i = borderCoordinates.getRow(), j = borderCoordinates.getColumn(); i < cellLocation.getRow(); i++, j++) {
-            System.out.println("i: " + i + " j: " + j);
+//            System.out.println("i: " + i + " j: " + j);
             if (isCorrectCellStateFound) {
                 if (board.getState(i, j).equals(FieldState.getOpposite(cellState))) {
                     areAllPiecesBeetwenOposites = true;
@@ -142,7 +151,73 @@ public class GameEngine implements BoardCallBacks {
                 isCorrectCellStateFound = true;
             }
         }
-        System.out.println("============================");
+//        System.out.println("============================");
+        return areAllPiecesBeetwenOposites;
+    }
+
+    private boolean checkRightBottomToTopLeft(FieldState cellState, CellCoordinates cellLocation) {
+        boolean isCorrectCellStateFound = false;
+        boolean areAllPiecesBeetwenOposites = false;
+        CellCoordinates borderCoordinates = bottomRightBorderCoordinates(cellLocation);
+        for (int i = borderCoordinates.getRow(), j = borderCoordinates.getColumn(); i > cellLocation.getRow(); i--, j--) {
+//            System.out.println("i: " + i + " j: " + j);
+            if (isCorrectCellStateFound) {
+                if (board.getState(i, j).equals(FieldState.getOpposite(cellState))) {
+                    areAllPiecesBeetwenOposites = true;
+                } else {
+                    areAllPiecesBeetwenOposites = false;
+                    isCorrectCellStateFound = false;
+                }
+            }
+            if (cellState == board.getState(i, j)) {
+                isCorrectCellStateFound = true;
+            }
+        }
+//        System.out.println("============================");
+        return areAllPiecesBeetwenOposites;
+    }
+
+    private boolean checkTopRightToBottomLeft(FieldState cellState, CellCoordinates cellLocation) {
+        boolean isCorrectCellStateFound = false;
+        boolean areAllPiecesBeetwenOposites = false;
+        CellCoordinates borderCoordinates = topRightBorderCoordinates(cellLocation);
+        for (int i = borderCoordinates.getRow(), j = borderCoordinates.getColumn(); i < cellLocation.getRow(); i++, j--) {
+//            System.out.println("i: " + i + " j: " + j);
+            if (isCorrectCellStateFound) {
+                if (board.getState(i, j).equals(FieldState.getOpposite(cellState))) {
+                    areAllPiecesBeetwenOposites = true;
+                } else {
+                    areAllPiecesBeetwenOposites = false;
+                    isCorrectCellStateFound = false;
+                }
+            }
+            if (cellState == board.getState(i, j)) {
+                isCorrectCellStateFound = true;
+            }
+        }
+//        System.out.println("============================");
+        return areAllPiecesBeetwenOposites;
+    }
+
+    private boolean checkBottomLeftToTopRight(FieldState cellState, CellCoordinates cellLocation) {
+        boolean isCorrectCellStateFound = false;
+        boolean areAllPiecesBeetwenOposites = false;
+        CellCoordinates borderCoordinates = bottomLeftBorderCoordinates(cellLocation);
+        for (int i = borderCoordinates.getRow(), j = borderCoordinates.getColumn(); i > cellLocation.getRow(); i--, j++) {
+//            System.out.println("i: " + i + " j: " + j);
+            if (isCorrectCellStateFound) {
+                if (board.getState(i, j).equals(FieldState.getOpposite(cellState))) {
+                    areAllPiecesBeetwenOposites = true;
+                } else {
+                    areAllPiecesBeetwenOposites = false;
+                    isCorrectCellStateFound = false;
+                }
+            }
+            if (cellState == board.getState(i, j)) {
+                isCorrectCellStateFound = true;
+            }
+        }
+//        System.out.println("============================");
         return areAllPiecesBeetwenOposites;
     }
 
@@ -157,7 +232,7 @@ public class GameEngine implements BoardCallBacks {
 
     private CellCoordinates topRightBorderCoordinates(CellCoordinates cellCoordinates) {
         CellCoordinates result = new CellCoordinates(cellCoordinates.getRow(), cellCoordinates.getColumn());
-        while (result.getRow() != 0 || result.getColumn() != N) {
+        while (result.getRow() != 0 && result.getColumn() != (N - 1)) {
             result.row--;
             result.column++;
         }
@@ -166,7 +241,7 @@ public class GameEngine implements BoardCallBacks {
 
     private CellCoordinates bottomLeftBorderCoordinates(CellCoordinates cellCoordinates) {
         CellCoordinates result = new CellCoordinates(cellCoordinates.getRow(), cellCoordinates.getColumn());
-        while (result.getRow() != N || result.getColumn() != 0) {
+        while (result.getRow() != (N - 1) && result.getColumn() != 0) {
             result.row++;
             result.column--;
         }
@@ -175,7 +250,7 @@ public class GameEngine implements BoardCallBacks {
 
     private CellCoordinates bottomRightBorderCoordinates(CellCoordinates cellCoordinates) {
         CellCoordinates result = new CellCoordinates(cellCoordinates.getRow(), cellCoordinates.getColumn());
-        while (result.getRow() != N || result.getColumn() != N) {
+        while (result.getRow() != (N - 1) && result.getColumn() != (N - 1)) {
             result.row++;
             result.column++;
         }
@@ -187,11 +262,21 @@ public class GameEngine implements BoardCallBacks {
     }
 
     @Override
-    public void moveOn(PlayerTurn playerTurn, CellCoordinates cellCoordinates) {
+    public PlayerTurn moveOn(PlayerTurn playerTurn, CellCoordinates cellCoordinates) {
         if (!isMovePossible(playerTurn, cellCoordinates)) {
             throw new Error("Wrong move forwarded to backend");
         }
         board.makeMove(playerTurn, cellCoordinates);
         uiCallBacks.boardUpdate(board);
+        return getNextMovePlayer(playerTurn);
+    }
+
+    private PlayerTurn getNextMovePlayer(PlayerTurn playerTurn) {
+        return playerTurn.equals(PlayerTurn.BLACK) ? PlayerTurn.WHITE : PlayerTurn.BLACK;
+    }
+
+    @Override
+    public Board getBoard() {
+        return board;
     }
 }
