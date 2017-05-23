@@ -8,7 +8,7 @@ public class Main extends Application {
     @Override
     public void start(final Stage stage) throws Exception {
         GameEngine gameEngine = new GameEngine();
-        BoardView boardView  = new BoardView(100, gameEngine);
+        BoardView boardView  = new BoardView(50, gameEngine);
         stage.setScene(boardView.createScene());
         stage.setTitle("Reversi");
         stage.show();

@@ -267,8 +267,74 @@ public class GameEngine implements BoardCallBacks {
             throw new Error("Wrong move forwarded to backend");
         }
         board.makeMove(playerTurn, cellCoordinates);
+        claimFields(playerTurn, cellCoordinates);
         uiCallBacks.boardUpdate(board);
         return getNextMovePlayer(playerTurn);
+    }
+
+    private void claimFields(PlayerTurn playerTurn, CellCoordinates cellCoordinates) {
+        FieldState fieldState = getPlayerColour(playerTurn);
+
+        if (cellCoordinates.getColumn() != 0 && checkLeftToRight(fieldState, cellCoordinates)) {
+            CellCoordinates coursor = new CellCoordinates(cellCoordinates.getRow(), cellCoordinates.getColumn() - 1);
+            while (board.getState(coursor) == FieldState.getOpposite(fieldState)) {
+                board.makeMove(playerTurn, coursor);
+                coursor.column--;
+            }
+        }
+        if (cellCoordinates.getColumn() != (N - 1) && checkRightToLeft(fieldState, cellCoordinates)) {
+            CellCoordinates coursor = new CellCoordinates(cellCoordinates.getRow(), cellCoordinates.getColumn() + 1);
+            while (board.getState(coursor) == FieldState.getOpposite(fieldState)) {
+                board.makeMove(playerTurn, coursor);
+                coursor.column++;
+            }
+        }
+        if (checkTopToBottom(fieldState, cellCoordinates)) {
+            CellCoordinates coursor = new CellCoordinates(cellCoordinates.getRow() - 1, cellCoordinates.getColumn());
+            while (board.getState(coursor) == FieldState.getOpposite(fieldState)) {
+                board.makeMove(playerTurn, coursor);
+                coursor.row--;
+            }
+        }
+        if (checkBottomToTop(fieldState, cellCoordinates)) {
+            CellCoordinates coursor = new CellCoordinates(cellCoordinates.getRow() + 1, cellCoordinates.getColumn());
+            while (board.getState(coursor) == FieldState.getOpposite(fieldState)) {
+                board.makeMove(playerTurn, coursor);
+                coursor.row++;
+            }
+        }
+        if (checkTopLeftToRightBottom(fieldState, cellCoordinates)) {
+            CellCoordinates coursor = new CellCoordinates(cellCoordinates.getRow() - 1, cellCoordinates.getColumn() - 1);
+            while(board.getState(coursor) == FieldState.getOpposite(fieldState)){
+                board.makeMove(playerTurn, coursor);
+                coursor.column--;
+                coursor.row--;
+            }
+        }
+        if (checkRightBottomToTopLeft(fieldState, cellCoordinates)) {
+            CellCoordinates coursor = new CellCoordinates(cellCoordinates.getRow() + 1, cellCoordinates.getColumn() + 1);
+            while(board.getState(coursor) == FieldState.getOpposite(fieldState)){
+                board.makeMove(playerTurn, coursor);
+                coursor.column++;
+                coursor.row++;
+            }
+        }
+        if (checkBottomLeftToTopRight(fieldState, cellCoordinates)) {
+            CellCoordinates coursor = new CellCoordinates(cellCoordinates.getRow() + 1, cellCoordinates.getColumn() - 1);
+            while(board.getState(coursor) == FieldState.getOpposite(fieldState)){
+                board.makeMove(playerTurn, coursor);
+                coursor.column--;
+                coursor.row++;
+            }
+        }
+        if (checkTopRightToBottomLeft(fieldState, cellCoordinates)) {
+            CellCoordinates coursor = new CellCoordinates(cellCoordinates.getRow() - 1, cellCoordinates.getColumn() + 1);
+            while(board.getState(coursor) == FieldState.getOpposite(fieldState)){
+                board.makeMove(playerTurn, coursor);
+                coursor.column++;
+                coursor.row--;
+            }
+        }
     }
 
     private PlayerTurn getNextMovePlayer(PlayerTurn playerTurn) {

@@ -1,5 +1,7 @@
 package app;
 
+import javafx.scene.control.Cell;
+
 /**
  * Created by korpa on 15.05.2017.
  */
@@ -45,6 +47,10 @@ public class Board {
             default:
                 return FieldState.EMPTY;
         }
+    }
+
+    public FieldState getState(CellCoordinates cellCoordinates){
+        return  getState(cellCoordinates.getRow(), cellCoordinates.getColumn());
     }
 
     public void makeMove(PlayerTurn playerTurn, CellCoordinates cellCoordinates){
