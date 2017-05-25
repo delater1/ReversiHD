@@ -17,8 +17,7 @@ public enum FieldState {
         }
         if (cellState.equals(WHITE)) {
             return BLACK;
-        } else {
-            return WHITE;
         }
+        return WHITE;
     }
 }
