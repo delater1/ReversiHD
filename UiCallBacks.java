@@ -5,5 +5,5 @@ package app;
  */
 public interface UiCallBacks {
     void boardUpdate(Board board);
-
+    void gameEnd(String result);
 }

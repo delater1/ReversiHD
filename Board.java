@@ -324,38 +324,38 @@ public class Board {
     public void claimFields(PlayerTurn playerTurn, CellCoordinates cellCoordinates) {
         FieldState fieldState = getPlayerColour(playerTurn);
 
-        if (cellCoordinates.getColumn() != 0 && checkLeftToRight(fieldState, cellCoordinates)) {
+        if (checkLeftToRight(fieldState, cellCoordinates)) {
             CellCoordinates coursor = new CellCoordinates(cellCoordinates.getRow(), cellCoordinates.getColumn() - 1);
             while (getState(coursor) == FieldState.getOpposite(fieldState)) {
-                makeMove(playerTurn, coursor);
+                setFieldColour(playerTurn, coursor);
                 coursor.column--;
             }
         }
-        if (cellCoordinates.getColumn() != (N - 1) && checkRightToLeft(fieldState, cellCoordinates)) {
+        if (checkRightToLeft(fieldState, cellCoordinates)) {
             CellCoordinates coursor = new CellCoordinates(cellCoordinates.getRow(), cellCoordinates.getColumn() + 1);
             while (getState(coursor) == FieldState.getOpposite(fieldState)) {
-                makeMove(playerTurn, coursor);
+                setFieldColour(playerTurn, coursor);
                 coursor.column++;
             }
         }
         if (checkTopToBottom(fieldState, cellCoordinates)) {
             CellCoordinates coursor = new CellCoordinates(cellCoordinates.getRow() - 1, cellCoordinates.getColumn());
             while (getState(coursor) == FieldState.getOpposite(fieldState)) {
-                makeMove(playerTurn, coursor);
+                setFieldColour(playerTurn, coursor);
                 coursor.row--;
             }
         }
         if (checkBottomToTop(fieldState, cellCoordinates)) {
             CellCoordinates coursor = new CellCoordinates(cellCoordinates.getRow() + 1, cellCoordinates.getColumn());
             while (getState(coursor) == FieldState.getOpposite(fieldState)) {
-                makeMove(playerTurn, coursor);
+                setFieldColour(playerTurn, coursor);
                 coursor.row++;
             }
         }
         if (checkTopLeftToRightBottom(fieldState, cellCoordinates)) {
             CellCoordinates coursor = new CellCoordinates(cellCoordinates.getRow() - 1, cellCoordinates.getColumn() - 1);
             while (getState(coursor) == FieldState.getOpposite(fieldState)) {
-                makeMove(playerTurn, coursor);
+                setFieldColour(playerTurn, coursor);
                 coursor.column--;
                 coursor.row--;
             }
@@ -363,7 +363,7 @@ public class Board {
         if (checkRightBottomToTopLeft(fieldState, cellCoordinates)) {
             CellCoordinates coursor = new CellCoordinates(cellCoordinates.getRow() + 1, cellCoordinates.getColumn() + 1);
             while (getState(coursor) == FieldState.getOpposite(fieldState)) {
-                makeMove(playerTurn, coursor);
+                setFieldColour(playerTurn, coursor);
                 coursor.column++;
                 coursor.row++;
             }
@@ -371,7 +371,7 @@ public class Board {
         if (checkBottomLeftToTopRight(fieldState, cellCoordinates)) {
             CellCoordinates coursor = new CellCoordinates(cellCoordinates.getRow() + 1, cellCoordinates.getColumn() - 1);
             while (getState(coursor) == FieldState.getOpposite(fieldState)) {
-                makeMove(playerTurn, coursor);
+                setFieldColour(playerTurn, coursor);
                 coursor.column--;
                 coursor.row++;
             }
@@ -379,7 +379,7 @@ public class Board {
         if (checkTopRightToBottomLeft(fieldState, cellCoordinates)) {
             CellCoordinates coursor = new CellCoordinates(cellCoordinates.getRow() - 1, cellCoordinates.getColumn() + 1);
             while (getState(coursor) == FieldState.getOpposite(fieldState)) {
-                makeMove(playerTurn, coursor);
+                setFieldColour(playerTurn, coursor);
                 coursor.column++;
                 coursor.row--;
             }
@@ -419,6 +419,17 @@ public class Board {
     }
 
     public PlayerTurn getNextMovePlayer(PlayerTurn playerTurn) {
+        if(getPossibleMoves(getOppositePlayer(playerTurn)).size() == 0){
+            return playerTurn;
+        }
+        return getOppositePlayer(playerTurn);
+    }
+
+    public PlayerTurn getOppositePlayer(PlayerTurn playerTurn){
         return playerTurn.equals(PlayerTurn.BLACK) ? PlayerTurn.WHITE : PlayerTurn.BLACK;
+    }
+
+    public boolean isGameFinished(){
+        return getPossibleMoves(PlayerTurn.WHITE).size() == 0 && getPossibleMoves(PlayerTurn.BLACK).size() ==0;
     }
 }

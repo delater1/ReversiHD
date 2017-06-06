@@ -8,6 +8,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.stage.Stage;
 
 /**
  * Created by korpa on 14.05.2017.
@@ -15,14 +16,17 @@ import javafx.scene.shape.Circle;
 public class BoardView implements UiCallBacks {
     int nodeSize;
     int N = 8;
+    boolean gameFinished;
     ReversiGridPane[][] gameBoard;
     BoardCallBacks boardCallBacks;
-    PlayerTurn currentPlayerTurn = PlayerTurn.BLACK;
+    PlayerTurn currentPlayerTurn = GameSettings.playerColour;
+    Stage stage;
 
 
-    public BoardView(int nodeSize, BoardCallBacks boardCallBacks) {
+    public BoardView(int nodeSize, BoardCallBacks boardCallBacks, Stage stage) {
         this.nodeSize = nodeSize;
         this.boardCallBacks = boardCallBacks;
+        this.stage = stage;
         gameBoard = new ReversiGridPane[N][N];
     }
 
@@ -47,8 +51,6 @@ public class BoardView implements UiCallBacks {
                 pane.setOnMouseReleased((MouseEvent e) -> {
                     mouseClick(pane, boardCallBacks);
                 });
-                pane.setOnMouseEntered(e -> mouseOver(pane, boardCallBacks));
-                pane.setOnMouseExited(e -> mouseExit(pane));
                 pane.getStyleClass().add("game-grid-cell");
                 grid.add(pane, j, i);
                 gameBoard[i][j] = pane;
@@ -69,8 +71,12 @@ public class BoardView implements UiCallBacks {
     }
 
     public void mouseClick(ReversiGridPane reversiGridPane, BoardCallBacks boardCallBacks) {
-        if (boardCallBacks.isPlayerTurn() && boardCallBacks.isMovePossible(currentPlayerTurn , reversiGridPane.getCellCoordinates())) {
+        if (!gameFinished && boardCallBacks.isPlayerTurn() && boardCallBacks.isMovePossible(currentPlayerTurn, reversiGridPane.getCellCoordinates())) {
+            setCircle(reversiGridPane, currentPlayerTurn.equals(PlayerTurn.BLACK) ? Color.BLACK : Color.WHITE);
             currentPlayerTurn = boardCallBacks.moveOn(currentPlayerTurn, reversiGridPane.getCellCoordinates());
+            if (!gameFinished) {
+                stage.setTitle(currentPlayerTurn.toString());
+            }
         }
     }
 
@@ -87,28 +93,38 @@ public class BoardView implements UiCallBacks {
         return group;
     }
 
-    public void mouseOver(ReversiGridPane reversiGridPane, BoardCallBacks boardCallBacks) {
-        if (boardCallBacks.isPlayerTurn() && boardCallBacks.isMovePossible(currentPlayerTurn, reversiGridPane.getCellCoordinates())) {
-            reversiGridPane.setStyle("-fx-background-color: black, #6aba3e; -fx-background-insets: 0, 0 1 1 0;");
-        }
-    }
-
-    public void mouseExit(ReversiGridPane reversiGridPane) {
-        reversiGridPane.setStyle("-fx-background-color: black, #4d8f3d; -fx-background-insets: 0, 0 1 1 0;");
-    }
-
     @Override
     public void boardUpdate(Board board) {
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
                 gameBoard[i][j].getChildren().removeAll();
-                if(board.getState(i,j).equals(FieldState.WHITE)){
+                if (board.getState(i, j).equals(FieldState.WHITE)) {
                     setCircle(gameBoard[i][j], Color.WHITE);
                 }
-                if(board.getState(i,j).equals(FieldState.BLACK)){
+                if (board.getState(i, j).equals(FieldState.BLACK)) {
                     setCircle(gameBoard[i][j], Color.BLACK);
+                }
+                if (boardCallBacks.isMovePossible(currentPlayerTurn, new CellCoordinates(i, j))) {
+                    setHighlighted(gameBoard[i][j]);
+                } else {
+                    setNotHighlighted(gameBoard[i][j]);
                 }
             }
         }
     }
+
+    @Override
+    public void gameEnd(String result) {
+        stage.setTitle(result);
+        gameFinished = true;
+    }
+
+    private void setNotHighlighted(ReversiGridPane reversiGridPane) {
+        reversiGridPane.setStyle("-fx-background-color: black, #4d8f3d; -fx-background-insets: 0, 0 1 1 0;");
+    }
+
+    private void setHighlighted(ReversiGridPane reversiGridPane) {
+        reversiGridPane.setStyle("-fx-background-color: black, #6aba3e; -fx-background-insets: 0, 0 1 1 0;");
+    }
+
 }

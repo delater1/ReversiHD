@@ -5,24 +5,29 @@ import java.util.List;
 /**
  * Created by korpa on 24.05.2017.
  */
-public class MinMax {
+public class MinMax implements Runnable {
     public static PlayerTurn side;
     int depth;
+    Board board;
+    AiCallBacks aiCallBacks;
 
-    MinMax(int depth, PlayerTurn s) {
+    MinMax(int depth, PlayerTurn s, Board board, AiCallBacks aiCallBacks) {
         side = s;
         this.depth = depth;
+        this.board = board;
+        this.aiCallBacks = aiCallBacks;
     }
 
-    public CellCoordinates run(PlayerTurn playerTurn, Board board) {
-        List<CellCoordinates> list =  board.getPossibleMoves(playerTurn);
-        Result result = new Result(Integer.MIN_VALUE, null);
+    @Override
+    public void run() {
+        List<CellCoordinates> list = board.getPossibleMoves(side);
+        Result result = new Result(Integer.MIN_VALUE, list.get(0));
         for (int i = 0; i < list.size(); i++) {
-            Result res= new MinMaxNode().run(board.copy(), playerTurn, depth, list.get(i));
-            if(res.value > result.value){
+            Result res = new MinMaxNode().run(board.copy(), side, depth - 1, list.get(i));
+            if (res.value > result.value) {
                 result = res;
             }
         }
-        return result.cellCoordinates;
+        aiCallBacks.onFinished(result.cellCoordinates, side);
     }
 }

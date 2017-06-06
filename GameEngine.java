@@ -4,23 +4,25 @@ package app;
  * Created by korpa on 14.05.2017.
  */
 @SuppressWarnings("Duplicates")
-public class GameEngine implements BoardCallBacks {
+public class GameEngine implements BoardCallBacks, AiCallBacks {
+    static PositionValueHeuteristic positionValueHeuteristic;
+    static PossibleMovesHeuterestic possibleMovesHeuterestic;
+    static SimpleScoreHeuterestic simpleScoreHeuterestic;
     UiCallBacks uiCallBacks;
-    static final int N = 8;
     Board board;
-    MinMax minMax;
-
+    boolean isPlayerTurn = true;
 
     GameEngine() {
         board = new Board();
         board.fillStartingBoard();
-        minMax = new MinMax(2, PlayerTurn.WHITE);
+        positionValueHeuteristic = new PositionValueHeuteristic();
+        possibleMovesHeuterestic = new PossibleMovesHeuterestic();
+        simpleScoreHeuterestic = new SimpleScoreHeuterestic();
     }
-
 
     @Override
     public boolean isPlayerTurn() {
-        return true;
+        return isPlayerTurn;
     }
 
     @Override
@@ -30,6 +32,9 @@ public class GameEngine implements BoardCallBacks {
 
     public void setUiCallBacks(UiCallBacks uiCallBacks) {
         this.uiCallBacks = uiCallBacks;
+        if (GameSettings.playerColour.equals(PlayerTurn.WHITE)) {
+            runAi(PlayerTurn.BLACK);
+        }
     }
 
     @Override
@@ -39,24 +44,83 @@ public class GameEngine implements BoardCallBacks {
         }
         board.makeMove(playerTurn, cellCoordinates);
         uiCallBacks.boardUpdate(board);
-        CellCoordinates cellCoordinates1 = minMax.run(PlayerTurn.WHITE, board);
-        System.out.println("-- row: " + cellCoordinates1.getRow() + "  column: " + cellCoordinates1.getColumn());
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-
-
+        isPlayerTurn = false;
+        runAi(board.getOppositePlayer(playerTurn));
+        if (board.isGameFinished()) {
+            gameFinished();
         }
-        board.makeMove(PlayerTurn.WHITE, cellCoordinates1);
+        isPlayerTurn = true;
+        return playerTurn;
+    }
 
+    private void runAi(PlayerTurn playerTurn) {
+        if (hasMoves((playerTurn))) {
+            runAlphaBeta(playerTurn);
+            while (!hasMoves(board.getOppositePlayer(playerTurn)) && hasMoves(playerTurn)) {
+                runAlphaBeta(playerTurn);
+            }
+        }
         uiCallBacks.boardUpdate(board);
-        return playerTurn.BLACK;
+    }
+
+    private boolean hasMoves(PlayerTurn playerTurn) {
+        return board.getPossibleMoves(playerTurn).size() != 0;
+    }
+
+    private void runMinMax(PlayerTurn playerTurn) {
+        MinMax minMax = new MinMax(GameSettings.depth, playerTurn, board, this);
+        minMax.run();
+    }
+
+    private void runAlphaBeta(PlayerTurn playerTurn) {
+        AlphaBeta alphaBeta = new AlphaBeta(GameSettings.depth, playerTurn, board, this);
+        alphaBeta.run();
+    }
+
+    private void gameFinished() {
+        if (board.isGameFinished()) {
+            System.out.println("Game finished");
+            if (board.getBlackScore() > board.getWhiteScore()) {
+                System.out.println("Black won: " + board.getBlackScore() + " - " + board.getWhiteScore());
+                uiCallBacks.gameEnd("Black won: " + board.getBlackScore() + " - " + board.getWhiteScore());
+            } else if (board.getBlackScore() < board.getWhiteScore()) {
+                System.out.println("White won: " + board.getWhiteScore() + " - " + board.getBlackScore());
+                uiCallBacks.gameEnd("White won: " + board.getWhiteScore() + " - " + board.getBlackScore());
+            } else {
+                System.out.println("Draw: " + board.getWhiteScore() + " - " + board.getBlackScore());
+                uiCallBacks.gameEnd("Draw: " + board.getWhiteScore() + " - " + board.getBlackScore());
+            }
+        }
     }
 
 
     @Override
     public Board getBoard() {
         return board;
+    }
+
+
+    @Override
+    public void onFinished(CellCoordinates cellCoordinates, PlayerTurn playerTurn) {
+        board.makeMove(playerTurn, cellCoordinates);
+    }
+
+    public static Heuterestic getAlHeuterestic0(){
+        return getAlHeuterestic(GameSettings.heuteristic);
+    }
+
+    public static Heuterestic getAlHeuterestic1(){
+        return getAlHeuterestic(GameSettings.heuteristic1);
+    }
+
+    private static Heuterestic getAlHeuterestic(String heuteristic){
+        if(heuteristic.equals("Statyczna tablica"))
+            return positionValueHeuteristic;
+        if(heuteristic.equals("Zajete pola"))
+            return simpleScoreHeuterestic;
+        if(heuteristic.equals("Liczba możliwych ruchow"))
+            return possibleMovesHeuterestic;
+        return null;
     }
 
 

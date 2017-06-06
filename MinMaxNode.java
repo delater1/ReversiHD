@@ -43,7 +43,7 @@ public class MinMaxNode {
     }
 
     private int evaluateBoard(Board board, PlayerTurn playerTurn) {
-        return positionValueHeuteristic.getPostionValue(board, playerTurn);
+        return GameEngine.getAlHeuterestic0().evaluate(board, playerTurn);
     }
 
 
